@@ -58,6 +58,12 @@ ul > li {
 	flex-wrap: wrap;
 	justify-content: center;
 }
+.column-card-list {
+	min-height: 70px;
+	max-height: 100%;
+	overflow: hidden;
+	overflow-y: scroll;
+}
 .column {
 	display: flex;
 	flex-direction: column;
