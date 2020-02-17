@@ -1,144 +1,48 @@
 'use strict';
 
+var tweetLink = "https://twitter.com/intent/tweet?text=";
+var quoteUrl = "https://quotesondesign.com/wp-json/posts?filter[orderby]=rand&filter[posts_per_page]=1";
+
+// Get a quote function
+
+function getQuote() {
+    fetch(quoteUrl, { cache: "no-store" })
+        .then(function(resp) {
+            return resp.json();
+        })
+        .then(createTweet);
+}
+
+// Create Tweet function
+
+function createTweet(input) {
+    var data = input[0];
+
+    var dataElement = document.createElement('div');
+    dataElement.innerHTML = data.content;
+    var quoteText = dataElement.innerText.trim();
+    var quoteAuthor = data.title;
+
+    if (!quoteAuthor.length) {
+        quoteAuthor = "Unknown author";
+    }
+
+    var tweetText = "Quote of the day - " + quoteText + " Author: " + quoteAuthor;
+
+    if (tweetText.length > 140) {
+    	getQuote();
+	} else {
+	    var tweet = tweetLink + encodeURIComponent(tweetText);
+	    document.querySelector('.quote').innerText = quoteText;
+	    document.querySelector('.author').innerText = "Author: " + quoteAuthor;
+	    document.querySelector('.tweet').setAttribute('href', tweet);
+	}
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-
-    // function which draws random ID number
-
-    function randomString() {
-	    var chars = '0123456789abcdefghiklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXTZ';
-	    var str = '';
-
-	    for (var i = 0; i < 10; i++) {
-	        str += chars[Math.floor(Math.random() * chars.length)];
-	    }
-
-	    return str;
-	}
-
-	// generate HTML template
-
-	function generateTemplate(name, data, basicElement) {
-	  	var template = document.getElementById(name).innerHTML;
-	  	var element = document.createElement(basicElement || 'div');
-
-	  	Mustache.parse(template);
-	 	 element.innerHTML = Mustache.render(template, data);
-
-	  	return element;
-	}	
-
-	// Column class
-
-	function Column(name) {
-	  	var self = this;
-
-	  	this.id = randomString();
-	  	this.name = name;
-	  	this.element = generateTemplate('column-template', { name: this.name, id: this.id });
-	  	this.element.querySelector('.column').addEventListener('click', function (event) {
-  			if (event.target.classList.contains('btn-delete')) {
-    			self.removeColumn();
-  			}
-  			if (event.target.classList.contains('add-card')) {
-    			self.addCard(new Card(prompt("Enter the name of the card")));
-  			}
-		});
-	}
-
-	// Add card and remove column function
-
-	Column.prototype = {
-	    addCard: function(card) {
-	      this.element.querySelector('ul').appendChild(card.element);
-	    },
-	    removeColumn: function() {
-	      this.element.parentNode.removeChild(this.element);
-	    }
-	};
-
-	// Card class
-
-	function Card(description) {
-		var self = this;
-
-		this.id = randomString();
-		this.description = description;
-		this.element = generateTemplate('card-template', { description: this.description }, 'li');
-		this.element.querySelector('.card').addEventListener('click', function (event) {
-		  	event.stopPropagation();
-
-		  	if (event.target.classList.contains('btn-delete')) {
-		    	self.removeCard();
-		  	}
-		});
-	}
-
-	// Remove card function
-
-	Card.prototype = {
-		removeCard: function() {
-			this.element.parentNode.removeChild(this.element);
-	    }
-	}
-
-	// Drag'n'drop function
-
-	function initSortable(id) {
-	  	var el = document.getElementById(id);
-	  	var sortable = Sortable.create(el, {
-	    	group: 'kanban',
-	    	sort: true
-	  	});
-	}
-
-	// Board's object
-
-	var board = {
-	    name: 'Kanban Board',
-	    addColumn: function(column) {
-	    	this.element.appendChild(column.element);
-	      	initSortable(column.id);
-	    	},
-	    element: document.querySelector('#board .column-container')
-	};
-
-
-	// Add new column button
-
-	document.querySelector('#board .create-column').addEventListener('click', function() {
-	   var name = prompt('Enter a column name');
-	   var column = new Column(name);
-	   board.addColumn(column);
-	});
-
-	// Creating columns
-
-	var todoColumn = new Column('To do');
-	var doingColumn = new Column('Doing');
-	var doneColumn = new Column('Done');
-
-	// Adding columns to the board
-
-	board.addColumn(todoColumn);
-	board.addColumn(doingColumn);
-	board.addColumn(doneColumn);
-
-	// Creating Cards
-
-	var card1 = new Card('New task');
-	var card2 = new Card('Create kanban boards');
-
-	// Adding cards to columns
-
-	todoColumn.addCard(card1);
-	doingColumn.addCard(card2);
-
+    getQuote();
+    document.querySelector('.trigger').addEventListener('click', function() {
+        getQuote();
+    });
 });
-
-
-
-
-
-
-
 
